@@ -3,7 +3,7 @@ name: Manual Screenshot Bot
 
 on:
   push:
-    branches: [screenshots]
+    branches: [main]
   workflow_dispatch:
     inputs:
 
