@@ -1,0 +1,76 @@
+
+name: Manual Screenshot Bot
+
+on:
+  push:
+    branches: [screenshots]
+  workflow_dispatch:
+    inputs:
+
+jobs:
+  screenshots:
+    name: 
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - name: Planet Farms
+        run: |
+          sudo apt install tor
+          sudo npm install -g @treehouses/cli capture-website-cli --unsafe-perm=true
+          #export gitter_channel="${{ secrets.CHANNEL }}"
+          sudo treehouses tor add 22
+          sudo treehouses tor add 3000
+          sudo treehouses tor
+          sudo treehouses tor notice now
+          sudo treehouses sshkey github adduser dogi
+          #
+          git clone https://github.com/earthowned/planetfarms
+          cd planetfarms
+          git checkout localstorage
+          #
+          echo "REACT_APP_API_BASE_URL=https://api.planetfarms.io" > .env
+          echo "REACT_APP_CDN_BASE_URL=https://cdn.planetfarms.io" >> .env
+          echo "cat .env"
+          cat .env
+          echo "farm: npm i"
+          npm i
+          echo "starting planetfarms"
+          npm start &
+          sleep 5
+          #
+          cd ..
+          #
+          url="http://localhost:3000"
+          token=$(curl -s -X POST https://api.planetfarms.io/api/users/login -d '{"username": "${{ secrets.LOGIN }}", "password": "${{ secrets.PASSWORD }}"}' -H 'Content-Type: application/json' | sed -e 's/{"token":"//' | sed -e 's/"}//')
+          header="Authorization: \"Bearer $token\""
+          mkdir -p screenshots
+          cd screenshots
+          capture-website $url/login --output=login.png
+          capture-website $url/register --output=register.png
+          capture-website $url/community-page-news --header=$header --output=community-page-news.png
+          cd ..
+          sync
+      - name: Upload
+        uses: actions/upload-artifact@v2
+        with:
+          name: screenshots
+          path: screenshots
+      - name: Sleep
+        run: |
+          #echo "5min countdown"
+          #sleep 60
+          #echo "4min countdown"
+          #sleep 60
+          #echo "5min countdown"
+          #sleep 60
+          #echo "3min countdown"
+          #sleep 60
+          #echo "2min countdown"
+          #sleep 60
+          #echo "1min countdown"
+          #sleep 60
+          echo "stop"
